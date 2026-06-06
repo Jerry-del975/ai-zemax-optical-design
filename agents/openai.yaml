@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI Zemax Optical Design"
+  short_description: "Automated Zemax optical design loops through ZOS-API."
+  default_prompt: "Use $ai-zemax-optical-design to run an automated Zemax design loop from requirements or an existing lens file."

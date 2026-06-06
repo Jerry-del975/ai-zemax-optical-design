@@ -1,0 +1,32 @@
+{
+  "name": "@jerrydel975/ai-zemax-optical-design",
+  "version": "1.0.0",
+  "description": "Automated optical design skill for Claude Code — drives Ansys Zemax OpticStudio through ZOS-API",
+  "keywords": [
+    "zemax",
+    "optical-design",
+    "claude-code",
+    "skill",
+    "zos-api",
+    "lens-design",
+    "optica"
+  ],
+  "author": "Jerry",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Jerry-del975/ai-zemax-optical-design"
+  },
+  "scripts": {
+    "postinstall": "node install.js"
+  },
+  "files": [
+    "SKILL.md",
+    "agents/",
+    "scripts/",
+    "references/",
+    "examples/",
+    "tests/",
+    "install.js"
+  ]
+}

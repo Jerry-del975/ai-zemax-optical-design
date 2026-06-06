@@ -1,0 +1,85 @@
+{
+  "system_type": "telescope_terrestrial",
+  "mode": "new_design",
+  "input_lens": null,
+  "description": "12x60 terrestrial spotting telescope for sports, boating, bird watching. Objective: 420mm EFL f/7 with 60mm EPD. Porro Type I prism erector. Erfle eyepiece 35mm EFL. 4deg true FOV, 48deg apparent FOV.",
+  "wavelengths_um": [
+    { "value": 0.48613270, "weight": 1, "label": "F" },
+    { "value": 0.58756180, "weight": 1, "label": "d" },
+    { "value": 0.65627250, "weight": 1, "label": "C" }
+  ],
+  "fields": [
+    { "type": "angle_deg", "value": 0.0, "weight": 1, "label": "on-axis" },
+    { "type": "angle_deg", "value": 1.4, "weight": 1, "label": "0.7-field" },
+    { "type": "angle_deg", "value": 2.0, "weight": 1, "label": "full-field" }
+  ],
+  "aperture": { "type": "epd_mm", "value": 60.0 },
+  "targets": {
+    "efl_mm": 420.0,
+    "bfl_mm": null,
+    "total_track_mm": null,
+    "f_number": 7.0,
+    "field_stop_diameter_mm": 29.3,
+    "exit_pupil_diameter_mm": 5.0,
+    "magnification": 12.0,
+    "true_fov_deg": 4.0,
+    "apparent_fov_deg": 48.0,
+    "mtf": [
+      { "frequency_lp_per_mm": 20, "min_contrast": 0.4 },
+      { "frequency_lp_per_mm": 40, "min_contrast": 0.2 }
+    ],
+    "rms_spot_um": 15.0,
+    "distortion_percent_max": 5.0,
+    "image_orientation": "upright"
+  },
+  "constraints": {
+    "glass_catalogs": ["SCHOTT"],
+    "max_elements": 6,
+    "min_center_thickness_mm": 1.0,
+    "min_edge_thickness_mm": 0.8,
+    "min_air_gap_mm": 0.2,
+    "max_diameter_mm": 70.0,
+    "aspheres_allowed": false,
+    "zoom_configurations": []
+  },
+  "optical_train": {
+    "objective": {
+      "type": "air-spaced-achromatic-doublet",
+      "efl_mm": 420.0,
+      "f_number": 7.0,
+      "aperture_mm": 60.0,
+      "materials": ["N-BK7", "N-F2"],
+      "description": "Fraunhofer-type air-spaced doublet, crown-forward"
+    },
+    "prism_erector": {
+      "type": "porro-type-I",
+      "material": "N-BK7",
+      "equivalent_glass_path_mm": 160.0,
+      "description": "Two right-angle prisms providing upright image. Modeled as equivalent glass block."
+    },
+    "field_corrector": {
+      "type": "cemented-doublet",
+      "materials": ["N-BK7", "N-F2"],
+      "description": "Cemented doublet between prism block and image plane to correct off-axis aberrations (astigmatism, field curvature)."
+    },
+    "eyepiece": {
+      "type": "erfle",
+      "efl_mm": 35.0,
+      "apparent_fov_deg": 48.0,
+      "description": "Wide-angle Erfle eyepiece, designed separately. 35mm EFL at f/7 matches 5mm exit pupil."
+    }
+  },
+  "automation": {
+    "max_stages": 5,
+    "max_optimization_seconds_per_stage": 180,
+    "save_every_stage": true
+  },
+  "assumptions": [
+    "Porro Type I prism modeled as equivalent N-BK7 glass block of 160mm path length.",
+    "Eyepiece is designed separately; this design focuses on the objective + prism + corrector optical train producing a well-corrected intermediate image at the field stop.",
+    "True field of view is 4.0° (half-field 2.0°), derived from 48° apparent FOV / 12x magnification.",
+    "Field stop diameter of 29.3mm = 2 × 420mm × tan(2°).",
+    "Visible spectrum: F, d, C lines (standard visual).",
+    "Starting point derived from scaling principles — no existing 1200mm design file available; starting from first principles with a Fraunhofer doublet."
+  ]
+}

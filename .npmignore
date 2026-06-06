@@ -1,0 +1,12 @@
+designs/
+scripts/__pycache__/
+tests/__pycache__/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+node_modules/
+.DS_Store
+Thumbs.db
+*.log

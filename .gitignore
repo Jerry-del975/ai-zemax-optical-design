@@ -1,0 +1,4 @@
+designs/
+*.tgz
+*.pyc
+__pycache__/

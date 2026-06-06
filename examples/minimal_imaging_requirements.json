@@ -1,0 +1,40 @@
+{
+  "system_type": "imaging_lens",
+  "mode": "new_design",
+  "input_lens": null,
+  "wavelengths_um": [
+    { "value": 0.486, "weight": 1 },
+    { "value": 0.588, "weight": 1 },
+    { "value": 0.656, "weight": 1 }
+  ],
+  "fields": [
+    { "type": "angle_deg", "value": 0, "weight": 1 },
+    { "type": "angle_deg", "value": 5, "weight": 1 }
+  ],
+  "aperture": { "type": "f_number", "value": 4.0 },
+  "targets": {
+    "efl_mm": 50,
+    "bfl_mm": null,
+    "total_track_mm": null,
+    "mtf": [{ "frequency_lp_per_mm": 40, "min_contrast": 0.3 }],
+    "rms_spot_um": null,
+    "distortion_percent_max": null
+  },
+  "constraints": {
+    "glass_catalogs": ["SCHOTT"],
+    "max_elements": 2,
+    "min_center_thickness_mm": 0.8,
+    "min_air_gap_mm": 0.1,
+    "max_diameter_mm": null,
+    "aspheres_allowed": false,
+    "zoom_configurations": []
+  },
+  "automation": {
+    "max_stages": 5,
+    "max_optimization_seconds_per_stage": 120,
+    "save_every_stage": true
+  },
+  "assumptions": [
+    "Minimal sample for connection and automation smoke tests, not a production optical design."
+  ]
+}
