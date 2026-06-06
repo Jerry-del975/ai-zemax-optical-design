@@ -1,27 +1,46 @@
 {
   "name": "@jerrydel975/ai-zemax-optical-design",
   "version": "1.0.0",
-  "description": "Automated optical design skill for Claude Code — drives Ansys Zemax OpticStudio through ZOS-API",
+  "description": "Claude Code skill for automated optical design with Ansys Zemax OpticStudio through ZOS-API — turns requirements into executable design loops",
   "keywords": [
     "zemax",
     "optical-design",
     "claude-code",
-    "skill",
+    "claude-code-skill",
     "zos-api",
     "lens-design",
-    "optica"
+    "opticstudio",
+    "optics",
+    "imaging",
+    "lens-optimization"
   ],
-  "author": "Jerry",
+  "author": {
+    "name": "Jerry",
+    "email": "1638019616@qq.com",
+    "url": "https://github.com/Jerry-del975"
+  },
   "license": "MIT",
+  "homepage": "https://github.com/Jerry-del975/ai-zemax-optical-design#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Jerry-del975/ai-zemax-optical-design"
+    "url": "git+https://github.com/Jerry-del975/ai-zemax-optical-design.git"
   },
+  "bugs": {
+    "url": "https://github.com/Jerry-del975/ai-zemax-optical-design/issues"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "os": [
+    "win32"
+  ],
   "scripts": {
-    "postinstall": "node install.js"
+    "postinstall": "node install.js",
+    "test": "echo \"Run: python -m pytest tests/\""
   },
   "files": [
     "SKILL.md",
+    "README.md",
     "agents/",
     "scripts/",
     "references/",
