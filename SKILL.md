@@ -1,13 +1,13 @@
 ---
 name: ai-zemax-optical-design
-description: "Automated optical design agent for Ansys Zemax OpticStudio 2024 R1 through ZOS-API. Use when Codex should automatically turn optical requirements or an existing .zmx/.zos/.zar file into an executable Zemax design loop: parse requirements, create or load a lens model, run baseline analyses, choose variables and constraints, build a merit function, run staged optimization, compare iterations, save final lens files, and produce machine-readable design logs."
+description: "Automated optical design agent for Ansys Zemax OpticStudio (v20.3+) through ZOS-API. Use when Codex should automatically turn optical requirements or an existing .zmx/.zos/.zar file into an executable Zemax design loop: parse requirements, create or load a lens model, run baseline analyses, choose variables and constraints, build a merit function, run staged optimization, compare iterations, save final lens files, and produce machine-readable design logs."
 ---
 
 # AI Zemax Optical Design
 
 Use this skill as an automation agent for Zemax optical design. The deliverable is executable ZOS-API automation, not only design advice.
 
-Target environment: Ansys Zemax OpticStudio 2024 R1, with default install path `D:\Program Files\Ansys Zemax OpticStudio 2024 R1.00`.
+Target environment: Ansys Zemax OpticStudio v20.3+, with ZOSPy handling version discovery and API connection.
 
 ## Operating Contract
 
@@ -58,9 +58,9 @@ Do not stop at conceptual optical-design suggestions unless the user explicitly 
 ## Scripts
 
 - `scripts/automated_design_agent.py`: controller for the automated design loop.
-- `scripts/zos_design_primitives.py`: Zemax 2024 R1 ZOS-API connection, analysis export, save, metrics, and optimization primitives.
+- `scripts/zos_design_primitives.py`: ZOS-API connection (via ZOSPy), analysis export, save, metrics, and optimization primitives. Supports OpticStudio v20.3+.
 - `scripts/connection_smoke_test.py`: quick connection test for Standalone or Interactive Extension.
-- `scripts/connection_smoke_test.ps1`: PowerShell smoke test that loads the 2024 R1 DLLs directly when Python lacks `pythonnet`.
+- `scripts/connection_smoke_test.ps1`: PowerShell smoke test that loads the OpticStudio DLLs directly when Python lacks `zospy`.
 - `scripts/design_single_lens_interactive.ps1`: live Interactive Extension smoke design that creates a simple N-BK7 singlet, saves lens files, and exports analyses.
 - `examples/minimal_imaging_requirements.json`: small sample input for smoke-testing the automated design controller.
 
@@ -75,18 +75,25 @@ Load only the reference files needed for the active task.
 
 ## Connection Diagnostics
 
-For Python automation, `pythonnet` is required. If `import clr` fails, install `pythonnet` in the Python environment used to run the script, or use `scripts/connection_smoke_test.ps1` to verify OpticStudio DLL and license state first.
+For Python automation, **ZOSPy** (`pip install zospy`) is required. ZOSPy bundles `pythonnet`
+and handles all .NET interop internally — no manual DLL loading or `import clr` needed.
 
-Default to Interactive Extension for live testing because Standalone may crash or hang when the API license/session is unhealthy. Use Standalone only when explicitly requested or after the smoke test passes.
+Default to Interactive Extension for live testing because Standalone may crash or hang
+when the API license/session is unhealthy. Use Standalone only when explicitly requested
+or after the smoke test passes.
 
 Expected healthy connection:
 
-- Standalone: `CreateNewApplication()` returns an application, `IsValidLicenseForAPI=True`, and `PrimarySystem` is not null.
-- Interactive Extension: OpticStudio must be open in an extension-ready state; `ConnectAsExtension(0)` must return an application with valid API license and primary system.
+- Standalone: ZOSPy creates a new application, `IsValidLicenseForAPI=True`, and `PrimarySystem` is not null.
+- Interactive Extension: OpticStudio must be open in extension mode; ZOSPy connects and
+  returns an application with valid API license and primary system.
 
-If a connection object exists but `IsValidLicenseForAPI=False` or `PrimarySystem` is null, treat it as not usable for automation and fix the OpticStudio extension/license state before running the design loop.
+If a connection object exists but `IsValidLicenseForAPI=False` or `PrimarySystem` is null,
+treat it as not usable for automation and fix the OpticStudio extension/license state before
+running the design loop.
 
-Do not retry Standalone repeatedly after an OpticStudio exception dialog or timeout. Clear the dialog, restart OpticStudio if needed, then validate Interactive Extension first with:
+Do not retry Standalone repeatedly after an OpticStudio exception dialog or timeout.
+Clear the dialog, restart OpticStudio if needed, then validate Interactive Extension first with:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\connection_smoke_test.ps1

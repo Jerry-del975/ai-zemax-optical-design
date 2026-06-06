@@ -1,11 +1,15 @@
-# ZOS-API Patterns for OpticStudio 2024 R1
+# ZOS-API Patterns for OpticStudio (v20.3+)
 
 ## Connection
 
-- Default install root: `D:\Program Files\Ansys Zemax OpticStudio 2024 R1.00`.
-- Standalone mode: `ZOSAPI.ZOSAPI_Connection().CreateNewApplication()`.
-- Interactive Extension: `ConnectAsExtension(0)` after OpticStudio is open and extension mode is available.
-- 2024 R1 commonly stores `ZOSAPI_NetHelper.dll`, `ZOSAPI_Interfaces.dll`, and `ZOSAPI.dll` in the install root.
+Connection is handled by **ZOSPy** (`pip install zospy`). ZOSPy auto-discovers the OpticStudio
+installation; no paths or DLL names need to be hardcoded.
+
+- `connect_zemax()` (in `zos_design_primitives.py`) creates a `zospy.ZOS()` instance, calls
+  `zos.connect("extension")` or `zos.connect("standalone")`, and returns the raw ZOS-API
+  application object — downstream code works unchanged.
+- Interactive Extension: OpticStudio must be open and extension-ready.
+- Standalone: ZOSPy creates a new OpticStudio instance.
 - Always close analyses/tools and call `CloseApplication()` for Standalone sessions.
 
 ## Lens Data

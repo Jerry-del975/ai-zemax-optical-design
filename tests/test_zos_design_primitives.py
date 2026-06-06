@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import importlib.util
 import sys
-import tempfile
 import unittest
 from pathlib import Path
 
@@ -20,47 +19,35 @@ def load_primitives():
 
 
 class ZosDesignPrimitivesTest(unittest.TestCase):
-    def test_2024r1_default_candidate_is_included(self):
+    def test_module_loads_without_zosapi(self):
+        """Module should import cleanly (ZOSPy handles DLL loading at connect time)."""
         primitives = load_primitives()
+        self.assertTrue(hasattr(primitives, "connect_zemax"))
+        self.assertTrue(hasattr(primitives, "export_common_analyses"))
+        self.assertTrue(hasattr(primitives, "run_local_optimization"))
 
-        self.assertIn(
-            r"D:\Program Files\Ansys Zemax OpticStudio 2024 R1.00",
-            primitives.DEFAULT_ZOSAPI_ROOT_CANDIDATES,
-        )
-
-    def test_resolve_zosapi_root_accepts_explicit_2024r1_root(self):
+    def test_stage_result_dataclass(self):
+        """StageResult dataclass should still work."""
         primitives = load_primitives()
+        sr = primitives.StageResult(name="test", accepted=True, notes=["a", "b"])
+        self.assertEqual(sr.name, "test")
+        self.assertTrue(sr.accepted)
+        self.assertEqual(len(sr.notes), 2)
 
+    def test_write_stage_result_produces_json(self):
+        import tempfile
+
+        primitives = load_primitives()
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            (root / "ZOSAPI_NetHelper.dll").write_text("", encoding="utf-8")
+            out = Path(tmp)
+            result = primitives.StageResult(name="demo", notes=["one"])
+            path = primitives.write_stage_result(out, result)
+            self.assertTrue(path.is_file())
+            import json
 
-            self.assertEqual(primitives.resolve_zosapi_root(str(root)), root)
-
-    def test_resolve_zosapi_root_accepts_zos_api_subdirectory(self):
-        primitives = load_primitives()
-
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            sub = root / "ZOS-API"
-            sub.mkdir()
-            (sub / "ZOSAPI_NetHelper.dll").write_text("", encoding="utf-8")
-
-            self.assertEqual(primitives.resolve_zosapi_root(str(root)), sub)
-
-    def test_resolve_zosapi_root_reports_2024r1_when_missing(self):
-        primitives = load_primitives()
-
-        with tempfile.TemporaryDirectory() as tmp:
-            original = primitives.DEFAULT_ZOSAPI_ROOT_CANDIDATES
-            primitives.DEFAULT_ZOSAPI_ROOT_CANDIDATES = []
-            try:
-                with self.assertRaises(FileNotFoundError) as ctx:
-                    primitives.resolve_zosapi_root(str(Path(tmp) / "missing"))
-            finally:
-                primitives.DEFAULT_ZOSAPI_ROOT_CANDIDATES = original
-
-        self.assertIn("2024 R1", str(ctx.exception))
+            data = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(data["name"], "demo")
+            self.assertEqual(data["notes"], ["one"])
 
 
 if __name__ == "__main__":

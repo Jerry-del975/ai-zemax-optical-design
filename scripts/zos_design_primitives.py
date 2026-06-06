@@ -1,23 +1,12 @@
-"""Zemax OpticStudio 2024 R1 primitives for automated optical design."""
+"""Zemax OpticStudio primitives for automated optical design (multi-version via ZOSPy)."""
 
 from __future__ import annotations
 
 import json
-import os
-import sys
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any
-
-
-DEFAULT_ZOSAPI_ROOT_CANDIDATES = [
-    r"D:\Program Files\Ansys Zemax OpticStudio 2024 R1.00",
-    r"C:\Program Files\Ansys Zemax OpticStudio 2024 R1.00",
-    r"C:\Program Files\ANSYS Inc\Zemax OpticStudio 2024 R1.00",
-    r"C:\Program Files\ANSYS Zemax OpticStudio",
-    r"C:\Program Files\Zemax OpticStudio",
-]
 
 
 @dataclass
@@ -31,73 +20,39 @@ class StageResult:
     notes: list[str] = field(default_factory=list)
 
 
-def resolve_zosapi_root(explicit_root: str | None = None) -> Path:
-    candidates: list[Path] = []
-    if explicit_root:
-        candidates.append(Path(explicit_root))
-    env_root = os.environ.get("ZOSAPI_ROOT")
-    if env_root:
-        candidates.append(Path(env_root))
-    candidates.extend(Path(item) for item in DEFAULT_ZOSAPI_ROOT_CANDIDATES)
-
-    for candidate in candidates:
-        if _has_nethelper(candidate):
-            return candidate
-        subdir = candidate / "ZOS-API"
-        if _has_nethelper(subdir):
-            return subdir
-
-    checked = "\n".join(str(item) for item in candidates)
-    raise FileNotFoundError(
-        "Could not find ZOSAPI_NetHelper.dll for Ansys Zemax OpticStudio 2024 R1.\n"
-        f"Checked:\n{checked}\n"
-        "Set ZOSAPI_ROOT to the OpticStudio install directory if it is installed elsewhere."
-    )
-
-
-def _has_nethelper(path: Path) -> bool:
-    return path.is_dir() and (path / "ZOSAPI_NetHelper.dll").is_file()
-
-
 def connect_zemax(zos_root: str | None = None, standalone: bool = False):
-    """Connect to OpticStudio 2024 R1 via ZOS-API and return the application."""
-    root = resolve_zosapi_root(zos_root)
-    if str(root) not in sys.path:
-        sys.path.insert(0, str(root))
+    """Connect to OpticStudio via ZOSPy and return the ZOS-API application object.
 
-    try:
-        import clr  # type: ignore
-    except ImportError as exc:
-        raise RuntimeError("pythonnet is required for ZOS-API automation. Install pythonnet in the Python used to run this script.") from exc
+    ZOSPy handles version discovery (v20.3+), DLL loading, and connection
+    initialization.  The returned object is the raw ZOS-API application so
+    existing analysis / optimisation / save code works unchanged.
+    """
+    import zospy as zp  # type: ignore
 
-    nethelper = root / "ZOSAPI_NetHelper.dll"
-    interfaces = root / "ZOSAPI_Interfaces.dll"
-    zosapi = root / "ZOSAPI.dll"
+    zos = zp.ZOS(zosapi_root=zos_root) if zos_root else zp.ZOS()
+    mode = "standalone" if standalone else "extension"
+    zos.connect(mode)
 
-    if nethelper.is_file():
-        clr.AddReference(str(nethelper))
-        try:
-            import ZOSAPI_NetHelper  # type: ignore
+    app: Any = zos.Application  # raw ZOS-API application
 
-            ZOSAPI_NetHelper.ZOSAPI_Initializer.Initialize(str(root))
-        except Exception:
-            pass
+    # Keep the ZOS instance alive — .NET remoting breaks if it is garbage-collected.
+    app._zos = zos
 
-    clr.AddReference(str(interfaces))
-    clr.AddReference(str(zosapi))
-    import ZOSAPI  # type: ignore
-
-    connection = ZOSAPI.ZOSAPI_Connection()
-    app = connection.CreateNewApplication() if standalone else connection.ConnectAsExtension(0)
     if app is None:
-        mode = "Standalone" if standalone else "Interactive Extension"
-        raise RuntimeError(f"Failed to connect to OpticStudio in {mode} mode.")
+        mode_name = "Standalone" if standalone else "Interactive Extension"
+        raise RuntimeError(f"Failed to connect to OpticStudio in {mode_name} mode.")
     if hasattr(app, "IsValidLicenseForAPI") and not app.IsValidLicenseForAPI:
-        mode = "Standalone" if standalone else "Interactive Extension"
-        raise RuntimeError(f"Connected to OpticStudio in {mode} mode, but no valid ZOS-API license is available.")
+        mode_name = "Standalone" if standalone else "Interactive Extension"
+        raise RuntimeError(
+            f"Connected to OpticStudio in {mode_name} mode, "
+            "but no valid ZOS-API license is available."
+        )
     if getattr(app, "PrimarySystem", None) is None:
-        mode = "Standalone" if standalone else "Interactive Extension"
-        raise RuntimeError(f"Connected to OpticStudio in {mode} mode, but PrimarySystem is not available.")
+        mode_name = "Standalone" if standalone else "Interactive Extension"
+        raise RuntimeError(
+            f"Connected to OpticStudio in {mode_name} mode, "
+            "but PrimarySystem is not available."
+        )
     return app
 
 
