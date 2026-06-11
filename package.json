@@ -1,6 +1,6 @@
 {
   "name": "@jerrydel975/ai-zemax-optical-design",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Claude Code skill for automated optical design with Ansys Zemax OpticStudio through ZOS-API — turns requirements into executable design loops",
   "keywords": [
     "zemax",

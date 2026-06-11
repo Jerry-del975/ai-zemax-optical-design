@@ -18,6 +18,22 @@ Normalize user requirements into this shape before running the automated design 
     "rms_spot_um": null,
     "distortion_percent_max": null
   },
+  "seed_design": {
+    "preferred_source": "official_example_or_catalog",
+    "family_hint": "zoom_imaging",
+    "match_axes": ["focal_length_span", "aperture", "group_count", "field_of_view"],
+    "provenance": {
+      "source_type": "official_example_or_catalog",
+      "source_name": null,
+      "source_path": null,
+      "source_version": null,
+      "approval_status": "system_selected"
+    },
+    "structural_gaps": [],
+    "selected_case": null,
+    "selected_case_path": null,
+    "selection_notes": []
+  },
   "constraints": {
     "glass_catalogs": ["SCHOTT"],
     "max_elements": null,
@@ -37,3 +53,4 @@ Normalize user requirements into this shape before running the automated design 
 ```
 
 Keep units explicit. For existing lenses, infer missing values from the loaded model before asking the user.
+If a user supplies or approves a seed case, record it here, keep the provenance in `seed_design.provenance`, and mirror any seed-to-target mismatch in `seed_design.structural_gaps` and the design log.

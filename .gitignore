@@ -1,4 +1,8 @@
 designs/
+output/
+.npm-cache/
 *.tgz
 *.pyc
 __pycache__/
+*.zmx
+*.ZDA

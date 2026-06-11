@@ -1,0 +1,117 @@
+{
+  "system_type": "imaging_lens",
+  "mode": "new_design",
+  "input_lens": null,
+  "description": "Metadata-only complex zoom example for a seed-driven workflow. It records the request, seed provenance, and structural gaps, but it does not change the optimization strategy.",
+  "wavelengths_um": [
+    { "value": 0.486, "weight": 1, "label": "F" },
+    { "value": 0.588, "weight": 1, "label": "d" },
+    { "value": 0.656, "weight": 1, "label": "C" }
+  ],
+  "fields": [
+    { "type": "angle_deg", "value": 0, "weight": 1, "label": "on-axis" },
+    { "type": "angle_deg", "value": 5, "weight": 1, "label": "mid-field" },
+    { "type": "angle_deg", "value": 10, "weight": 1, "label": "edge-field" }
+  ],
+  "aperture": { "type": "f_number", "value": 1.4 },
+  "targets": {
+    "efl_mm": 35.0,
+    "bfl_mm": null,
+    "total_track_mm": 140.0,
+    "mtf": [
+      { "frequency_lp_per_mm": 20, "min_contrast": 0.4 },
+      { "frequency_lp_per_mm": 40, "min_contrast": 0.2 }
+    ],
+    "rms_spot_um": 12.0,
+    "distortion_percent_max": 3.0
+  },
+  "seed_design": {
+    "preferred_source": "official_example_or_catalog",
+    "family_hint": "zoom_imaging",
+    "match_axes": [
+      "focal_length_span",
+      "aperture",
+      "group_count",
+      "field_of_view",
+      "package_length"
+    ],
+    "provenance": {
+      "source_type": "catalog_reference",
+      "source_name": "18-55 mm class zoom seed",
+      "source_path": null,
+      "source_version": "reference-only",
+      "approval_status": "user_approved"
+    },
+    "structural_gaps": [
+      {
+        "axis": "focal_length_span",
+        "requested": "18-55 mm",
+        "seed": "nearby zoom seed with similar family but different span",
+        "severity": "warning",
+        "note": "Record the span mismatch before any adaptation."
+      },
+      {
+        "axis": "aperture",
+        "requested": "f/1.4",
+        "seed": "slower zoom seed",
+        "severity": "warning",
+        "note": "Record the aperture mismatch as part of the input metadata."
+      },
+      {
+        "axis": "group_count",
+        "requested": "multi-group zoom architecture",
+        "seed": "simpler reference zoom seed",
+        "severity": "warning",
+        "note": "Log the structural delta without changing the optimization flow."
+      },
+      {
+        "axis": "package_length",
+        "requested": "compact consumer zoom envelope",
+        "seed": "reference seed with different packaging",
+        "severity": "warning",
+        "note": "Track the packaging gap for later traceability."
+      }
+    ],
+    "selected_case": "18-55 mm class zoom seed",
+    "selected_case_path": null,
+    "selection_notes": [
+      "Example input metadata only; it is not a directive to change the staged optimization flow.",
+      "Structural gaps should be tracked in the design log before optimization starts."
+    ]
+  },
+  "constraints": {
+    "glass_catalogs": ["SCHOTT"],
+    "max_elements": 12,
+    "min_center_thickness_mm": 0.8,
+    "min_air_gap_mm": 0.15,
+    "max_diameter_mm": 72.0,
+    "aspheres_allowed": false,
+    "zoom_configurations": [
+      {
+        "name": "wide",
+        "efl_mm": 18.0,
+        "notes": "Metadata target for the wide end of the zoom range."
+      },
+      {
+        "name": "mid",
+        "efl_mm": 35.0,
+        "notes": "Metadata target for the nominal mid-zoom position."
+      },
+      {
+        "name": "tele",
+        "efl_mm": 55.0,
+        "notes": "Metadata target for the tele end of the zoom range."
+      }
+    ]
+  },
+  "automation": {
+    "max_stages": 5,
+    "max_optimization_seconds_per_stage": 180,
+    "save_every_stage": true
+  },
+  "assumptions": [
+    "This example is input metadata only and does not alter optimization behavior.",
+    "The seed is recorded for traceability; any adaptation burden must still be handled by the normal staged design loop.",
+    "Zoom configurations are target metadata, not a solver policy."
+  ]
+}

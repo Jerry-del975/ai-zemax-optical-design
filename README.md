@@ -1,153 +1,217 @@
 # AI Zemax Optical Design
 
-Automated optical design skill for **Claude Code** — drives **Ansys Zemax OpticStudio** (v20.3–v26+) through ZOS-API to turn optical requirements into executable design loops.
+Automated optical design skill for **Claude Code** — drives **Ansys Zemax OpticStudio** through ZOS-API to turn optical requirements into executable, multi-stage design loops.
+
+[![version](https://img.shields.io/badge/version-1.2.0-blue)](https://github.com/Jerry-del975/ai-zemax-optical-design)
+[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+---
+
+## What's New in v1.2.0
+
+- **Zoom lens design agent** — new `scripts/zoom_lens_design_agent.py` for multi-configuration zoom systems with automatic MCE setup, staged optimization, and per-configuration analysis export.
+- **APS-C 18-55mm F/1.4 example** — complete zoom requirements and 4-group starting prescription with 3× zoom ratio, constant F/1.4 aperture.
+- **Hardened ZOS-API patterns** — fixed real-world API mismatches discovered during intensive testing: `MultiConfigOperandType` enum usage, MCE `AddConfiguration` signatures, optimization wizard property names, `LDE.StopSurface`, Python.NET 3.0 enum handling, and more.
+- **Automated analysis export** — per-configuration spot, MTF, wavefront, ray fan, and distortion analyses for every stage.
+- **Extended merit function builder** — built-in optimization wizard integration plus first-order targets (EFFL, WFNO, REAY, AXCL, LACL, DIMX) and manufacturing constraints (MNCT, MNET, MNEA, MXSD, MNEG, GCOS).
 
 ## What's New in v1.1.0
 
-- **ZOSPy integration** — connection layer now uses [ZOSPy](https://github.com/MREYE-LUMC/ZOSPy) (v2.1.5+, MIT license) instead of manual pythonnet DLL loading. ZOSPy auto-discovers OpticStudio installations across versions.
-- **Multi-version support** — v20.3 through v26+, no more hardcoded `D:\Program Files\Ansys Zemax OpticStudio 2024 R1.00`.
-- **Zero downstream breakage** — `connect_zemax()` signature unchanged. The returned ZOS-API application object is identical, so all analysis, optimization, and save code works as before.
-- Migration from `pythonnet` raw DLL loading → ZOSPy connection layer.
+- **ZOSPy integration** — connection layer uses [ZOSPy](https://github.com/MREYE-LUMC/ZOSPy) for version discovery. Falls back to pythonnet for direct API access when needed.
+- **Multi-version support** — OpticStudio v20.3 through v26+.
+- **Dual-mode connection** — Interactive Extension (recommended) and Standalone.
+
+---
 
 ## Installation
 
 ```bash
-npm install -g github:Jerry-del975/ai-zemax-optical-design
+# Clone the repo
+git clone https://github.com/Jerry-del975/ai-zemax-optical-design.git
+cd ai-zemax-optical-design
+
+# Install Python dependencies
+pip install zospy pythonnet
+
+# Install as Claude Code skill
+npm install
 ```
 
-Or install from npm (once published):
-
-```bash
-npm install -g ai-zemax-optical-design
-```
-
-The postinstall script automatically copies the skill into `~/.claude/skills/ai-zemax-optical-design/`. Restart Claude Code and the skill is ready to use.
-
-## What It Does
-
-This skill turns Claude Code into a Zemax automation agent. Instead of just giving design advice, it produces **executable ZOS-API Python scripts** that:
-
-1. **Parse requirements** — normalize optical specs from JSON or an existing `.zmx` / `.zos` / `.zar` file
-2. **Create or load lens models** — build sequential models from first-order requirements, or load existing designs
-3. **Run baseline analyses** — spot diagrams, MTF, wavefront, ray fans, field curvature/distortion before optimization
-4. **Stage optimization** — feasibility → image quality → field balance → manufacturability → tolerance readiness
-5. **Compare iterations** — each candidate scored against baseline and targets, with hidden-failure detection
-6. **Save versioned outputs** — lens files, analysis exports, metrics JSON, and design logs at every stage
-
-## Quickstart
+The postinstall script deploys the skill to `~/.claude/skills/ai-zemax-optical-design/`. Restart Claude Code and the skill is ready.
 
 ### Prerequisites
-
-- **Ansys Zemax OpticStudio** v20.3 or later (ZOSPy handles multi-version discovery)
-- **Python 3.10+** with `zospy` (`pip install zospy`)
-- **Claude Code** (the skill deploys to `~/.claude/skills/`)
-
-```bash
-# One-time: install ZOSPy
-pip install zospy
-```
-
-### Smoke Test
-
-```bash
-# Test ZOS-API connection to an open OpticStudio
-python scripts/connection_smoke_test.py
-```
-
-### Using in Claude Code
-
-Once installed, invoke the skill in Claude Code and provide requirements:
-
-```
-Use ai-zemax-optical-design to design a 50mm f/2.8 double-gauss lens
-for 35mm format, diffraction-limited at f/5.6, using only catalog glasses.
-```
-
-Or pass a requirements file:
-
-```
-Design from examples/minimal_imaging_requirements.json
-```
-
-## Project Structure
-
-```
-├── SKILL.md                        # Skill definition (loaded by Claude Code)
-├── agents/                         # Agent interface config
-│   └── openai.yaml
-├── scripts/                        # ZOS-API Python automation
-│   ├── zos_design_primitives.py              # Core: ZOSPy connection, analysis, optimization, save
-│   ├── automated_design_agent.py             # Controller for the full design loop
-│   └── connection_smoke_test.py              # Quick ZOS-API health check
-├── references/                     # Domain knowledge for the skill
-│   ├── requirements-schema.md                # Normalized input schema
-│   ├── merit-function.md                     # Staged merit-function rules
-│   ├── result-parsing.md                     # Analysis export & logging rules
-│   └── zos-api-patterns.md                   # OpticStudio ZOS-API reference (v20.3+)
-├── examples/                       # Sample input files
-│   ├── minimal_imaging_requirements.json
-│   └── telescope_12x60_requirements.json
-├── tests/                          # Unit tests
-│   └── test_zos_design_primitives.py
-├── package.json
-├── install.js                      # Postinstall: deploys skill to ~/.claude/skills/
-└── README.md
-```
-
-## Target Environment
 
 | Component | Requirement |
 |-----------|-------------|
 | **OS** | Windows 10/11 |
-| **OpticStudio** | v20.3+ (auto-detected by ZOSPy) |
-| **Python** | 3.10+ with `zospy>=2.1` |
+| **OpticStudio** | 2024 R1 (tested), v20.3+ (via ZOSPy) |
+| **Python** | 3.10+ |
+| **Python packages** | `zospy>=2.1`, `pythonnet` |
 | **Claude Code** | latest |
+
+---
+
+## Quickstart
+
+### 1. Smoke test connection
+
+Make sure OpticStudio is open, then:
+
+```bash
+python scripts/connection_smoke_test.py
+# Expected: "Connected: yes"
+```
+
+### 2. Design a lens
+
+**Simple prime lens:**
+```bash
+python scripts/automated_design_agent.py \
+  --requirements examples/minimal_imaging_requirements.json \
+  --out output/my-design
+```
+
+**Zoom lens (APS-C 18-55mm F/1.4):**
+```bash
+python scripts/zoom_lens_design_agent.py \
+  --requirements examples/apsc_18-55_f1.4_zoom_requirements.json \
+  --out output/aps-c-zoom
+```
+
+### 3. Review results
+
+```
+output/aps-c-zoom/
+├── zoom_baseline.zmx          ← Baseline lens (before optimization)
+├── zoom_feasibility.zmx       ← After feasibility stage
+├── zoom_image-quality.zmx     ← After image quality optimization
+├── zoom_field-balance.zmx     ← After field balancing
+├── zoom_manufacturability.zmx ← Final lens (all stages)
+├── design-log.jsonl           ← Machine-readable event log
+├── metrics-*.json             ← Per-stage merit values
+├── requirements.json          ← Normalized requirements (copy)
+└── analyses/
+    ├── baseline/              ← 5 analyses × 3 configurations
+    ├── feasibility/
+    ├── image-quality/
+    ├── field-balance/
+    └── manufacturability/
+```
+
+---
+
+## What It Does
+
+This skill turns Claude Code into a Zemax automation agent:
+
+1. **Parse requirements** — normalize optical specs from JSON or existing `.zmx` / `.zos` / `.zar` files
+2. **Build or load models** — create sequential starting prescriptions (prime or zoom), or adapt existing designs
+3. **Setup multi-configuration** — automatic MCE operand setup for zoom systems with variable air gaps
+4. **Run baseline analyses** — spot diagrams, FFT MTF, wavefront maps, ray fans, field curvature/distortion
+5. **Stage optimization** — feasibility → image quality → field balance → manufacturability
+6. **Export everything** — versioned lens files, analysis text exports, metrics JSON, and design logs
+
+---
+
+## Project Structure
+
+```
+├── SKILL.md                              # Skill definition (loaded by Claude Code)
+├── README.md
+├── package.json
+├── install.js                            # Postinstall: deploys skill to ~/.claude/skills/
+│
+├── scripts/
+│   ├── zos_design_primitives.py          # Core: connection, analysis, optimization, save
+│   ├── automated_design_agent.py         # Prime lens design controller
+│   ├── zoom_lens_design_agent.py         # ★ Multi-config zoom design controller (new)
+│   └── connection_smoke_test.py          # Quick ZOS-API health check
+│
+├── references/
+│   ├── requirements-schema.md            # Normalized input schema
+│   ├── merit-function.md                 # Staged merit-function rules
+│   ├── result-parsing.md                 # Analysis export & logging rules
+│   └── zos-api-patterns.md               # ZOS-API 2024 R1 reference
+│
+├── examples/
+│   ├── minimal_imaging_requirements.json
+│   ├── apsc_18-55_f1.4_zoom_requirements.json  # ★ APS-C zoom example
+│   └── seeded_complex_zoom_requirements.json
+│
+├── tests/
+│   ├── test_zos_design_primitives.py
+│   ├── test_automated_design_agent.py
+│   └── test_requirements_schema.py
+│
+└── output/                               # ★ Design outputs (gitignored)
+```
+
+---
+
+## Supported Design Types
+
+| Type | Agent | Features |
+|------|-------|----------|
+| Prime lens | `automated_design_agent.py` | Single-config, EFFL/BFL/F# targets |
+| Zoom lens | `zoom_lens_design_agent.py` | Multi-config MCE, variable air gaps, per-config EFL |
+| Seed-based | `automated_design_agent.py` | Load `.zmx` as starting point, adapt to targets |
+
+---
+
+## Optimization Stages
+
+| Stage | What It Does | Variables |
+|-------|-------------|-----------|
+| **Baseline** | Export analyses without optimization | None |
+| **Feasibility** | Hit EFL, F/#, BFL, image height targets | MCE gaps, BFL, first curvature per group |
+| **Image Quality** | Minimize RMS spot, wavefront, chromatic error | All radii, selected thicknesses |
+| **Field Balance** | Equalize performance across fields/configs | All radii, all thicknesses |
+| **Manufacturability** | Enforce edge thickness, glass constraints | All radii, thicknesses, glass substitutions |
+
+---
 
 ## Connection
 
-ZOSPy handles all .NET interop and version discovery — no paths, DLLs, or `pythonnet` import needed in user code. `connect_zemax()` returns a raw ZOS-API application object compatible with all existing analysis and optimization calls.
+The skill supports two connection modes:
 
 ```python
 from zos_design_primitives import connect_zemax
 
-# Interactive Extension (OpticStudio must be open)
+# Interactive Extension (OpticStudio must be open — recommended)
 app = connect_zemax(standalone=False)
 
-# Standalone (creates new instance)
+# Standalone (creates new OpticStudio instance)
 app = connect_zemax(standalone=True)
 
-system = app.PrimarySystem  # Same IOpticalSystem as before
+system = app.PrimarySystem
 ```
 
-### Known Limitation
+---
 
-The ZOS-API multi-configuration editor (MCE) has limited operand manipulation support through pythonnet 3.0. For zoom/multi-configuration designs, manual MCE setup in the Zemax GUI is recommended before running the automated optimization loop.
+## Known Limitations
 
-## Examples
+- **MCE operand API** — Python.NET 3.0 has limited enum-to-int conversion; MCE operand types must use `MultiConfigOperandType` enum values explicitly.
+- **Chinese paths** — OpticStudio `SaveAs` requires absolute paths; relative paths may silently fail with non-ASCII directory names.
+- **Optimization wizard** — properties use `OK()` (uppercase), `Ring`/`Arm`/`Data` (singular), `PupilIntegrationMethod` (full name) — not the intuitive names.
+- **Merit function access** — use `system.MFE` directly, not `system.Tools.OpenMeritFunction()`.
+- **Stop surface** — set via `system.LDE.StopSurface = N`, not `MakeSurfaceStop()`.
 
-### Minimal imaging lens
+---
 
-```json
-{
-  "efl": 50,
-  "f_number": 2.8,
-  "half_fov": 20,
-  "wavelengths_nm": [486, 587, 656],
-  "image_diagonal_mm": 43.2,
-  "glass_catalog": "SCHOTT",
-  "design_stages": ["feasibility", "image-quality", "manufacturability"]
-}
+## Upgrading
+
+```bash
+# Remove old skill
+rm -rf ~/.claude/skills/ai-zemax-optical-design
+
+# Pull latest
+cd ai-zemax-optical-design
+git pull origin master
+npm install
 ```
 
-See `examples/` for more.
-
-## Upgrading from v1.0.0
-
-1. Uninstall the old skill: `rm -rf ~/.claude/skills/ai-zemax-optical-design`
-2. Install the new version: `npm install -g github:Jerry-del975/ai-zemax-optical-design`
-3. Install ZOSPy: `pip install zospy`
-4. Restart Claude Code
+---
 
 ## License
 
-MIT
+MIT © [Jerry](https://github.com/Jerry-del975)

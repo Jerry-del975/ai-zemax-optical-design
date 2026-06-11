@@ -1,0 +1,55 @@
+{
+  "system_type": "imaging_lens",
+  "mode": "new_design",
+  "input_lens": null,
+  "description": "APS-C 3x zoom lens 18-55mm F/1.4 constant aperture",
+  "wavelengths_um": [
+    { "value": 0.48613270, "weight": 1 },
+    { "value": 0.58756180, "weight": 1 },
+    { "value": 0.65627250, "weight": 1 }
+  ],
+  "fields": [
+    { "type": "angle_deg", "value": 0.0, "weight": 1 },
+    { "type": "angle_deg", "value": 26.7, "weight": 1 },
+    { "type": "angle_deg", "value": 38.2, "weight": 1 }
+  ],
+  "aperture": { "type": "f_number", "value": 1.4 },
+  "targets": {
+    "efl_mm": 18.0,
+    "bfl_mm": 25.0,
+    "total_track_mm": 180.0,
+    "image_height_mm": 14.17,
+    "mtf": [{ "frequency_lp_per_mm": 40, "min_contrast": 0.3 }],
+    "rms_spot_um": 5.0,
+    "distortion_percent_max": 2.0
+  },
+  "constraints": {
+    "glass_catalogs": ["SCHOTT", "CDGM"],
+    "max_elements": 18,
+    "min_center_thickness_mm": 0.8,
+    "min_air_gap_mm": 0.1,
+    "max_diameter_mm": 85.0,
+    "aspheres_allowed": true,
+    "zoom_configurations": [
+      { "name": "wide_18mm", "efl_mm": 18.0, "f_number": 1.4, "image_height_mm": 14.17 },
+      { "name": "mid_35mm", "efl_mm": 35.0, "f_number": 1.4, "image_height_mm": 14.17 },
+      { "name": "tele_55mm", "efl_mm": 55.0, "f_number": 1.4, "image_height_mm": 14.17 }
+    ]
+  },
+  "automation": {
+    "max_stages": 5,
+    "max_optimization_seconds_per_stage": 300,
+    "save_every_stage": true
+  },
+  "assumptions": [
+    "APS-C format: 23.6mm × 15.7mm sensor, half-diagonal image height 14.17mm",
+    "Object at infinity for all configurations",
+    "Three zoom configurations: wide (18mm), mid (35mm), tele (55mm) → 3.06x zoom ratio",
+    "F/1.4 constant aperture across entire zoom range",
+    "Image space is in air, telecentricity not enforced",
+    "Aspheres allowed on up to 4 surfaces for aberration correction",
+    "Standard FdC visible wavelengths",
+    "Manufacturing constraints: minimum glass thickness 0.8mm, minimum air gap 0.1mm",
+    "SCHOTT and CDGM glass catalogs preferred"
+  ]
+}
